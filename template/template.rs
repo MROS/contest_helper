@@ -1,3 +1,6 @@
+#![allow(unused_imports)]
+#![allow(unused_macros)]
+#![allow(dead_code)]
 use std::io::{self, BufRead, stdin};
 use std::str::FromStr;
 use std::collections::VecDeque;
