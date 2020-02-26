@@ -5,13 +5,9 @@ use std::path::Path;
 
 // TODO: 改用 "?"
 fn get_template(lang: &str, dir: &Path) -> String {
-    for entry in fs::read_dir(dir).unwrap() {
-        let path = entry.unwrap().path();
-        if path.to_str().unwrap().ends_with(lang) {
-            return fs::read_to_string(path).unwrap();
-        }
-    }
-    return "".to_owned();
+    let path = dir.join(lang).join(format!("main.{}", lang));
+    println!("{:?}", path);
+    return fs::read_to_string(path).unwrap();
 }
 
 fn main() {
@@ -23,12 +19,19 @@ fn main() {
         .subcommand(SubCommand::with_name("dir"))
         .get_matches();
 
+    let file = matches.value_of("FILE").unwrap();
+
     let lang = match matches.value_of("language") {
-        None => "cpp",
+        None => {
+            let file_split: Vec<&str> = file.split(".").collect();
+            if file_split.len() > 1 {
+                file_split[file_split.len() - 1]
+            } else {
+                "cpp" // 沒有副檔名，就當 c++ 了
+            }
+        }
         Some(l) => l,
     };
-
-    let file = matches.value_of("FILE").unwrap();
 
     let mut file = fs::File::create(file).unwrap();
     file.write_all(get_template(lang, template_dir).as_bytes())

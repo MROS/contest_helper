@@ -1,13 +1,15 @@
 #![allow(unused_imports)]
 #![allow(unused_macros)]
 #![allow(dead_code)]
-use std::io::{self, BufRead, stdin};
+use std::cmp;
+use std::collections::{BTreeMap, BTreeSet, BinaryHeap, HashMap, HashSet, VecDeque};
+use std::io::{self, stdin, BufRead};
 use std::str::FromStr;
-use std::collections::VecDeque;
 
 fn read_one<T>() -> T
-where T: FromStr,
-      <T as std::str::FromStr>::Err: std::fmt::Debug
+where
+    T: FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Debug,
 {
     let stdin = stdin();
     let mut handle = stdin.lock();
@@ -36,21 +38,22 @@ macro_rules! read_tuple {
 }
 
 fn read_vec<T>() -> Vec<T>
-where T: FromStr,
-      <T as std::str::FromStr>::Err: std::fmt::Debug
+where
+    T: FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Debug,
 {
     let stdin = stdin();
     let mut handle = stdin.lock();
     let mut buf = String::new();
     handle.read_line(&mut buf).unwrap();
 
-    buf.trim().split_whitespace()
+    buf.trim()
+        .split_whitespace()
         .map(|s| s.parse::<T>().unwrap())
         .collect::<Vec<T>>()
 }
 
 fn main() -> io::Result<()> {
-
     let n = read_one::<String>();
     println!("{}", n);
 
