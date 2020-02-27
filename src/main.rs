@@ -26,7 +26,7 @@ fn insert_lib(source: &str, dir: &Path, lang: &str, libs: Vec<&str>) -> String {
     lines.join("\n")
 }
 
-fn main() {
+fn main() -> std::io::Result<()> {
     let template_dir = Path::new("/home/mros/bin/contest_helper/template/");
 
     let matches = App::new("contest_helper")
@@ -41,11 +41,11 @@ fn main() {
         .subcommand(SubCommand::with_name("dir"))
         .get_matches();
 
-    let file = matches.value_of("FILE").unwrap();
+    let filename = matches.value_of("FILE").unwrap();
 
     let lang = match matches.value_of("language") {
         None => {
-            let file_split: Vec<&str> = file.split(".").collect();
+            let file_split: Vec<&str> = filename.split(".").collect();
             if file_split.len() > 1 {
                 file_split[file_split.len() - 1]
             } else {
@@ -60,8 +60,19 @@ fn main() {
         None => vec![],
     };
 
-    let mut file = fs::File::create(file).unwrap();
-    let mut source = get_template(lang, template_dir);
-    source = insert_lib(&source, template_dir, lang, libs);
-    file.write_all(source.as_bytes()).unwrap();
+    if Path::new(filename).exists() {
+        if libs.len() > 0 {
+            let mut source = fs::read_to_string(Path::new(filename))?;
+            source = insert_lib(&source, template_dir, lang, libs);
+            let mut file = fs::File::create(filename)?;
+            file.write_all(source.as_bytes())?;
+        }
+    } else {
+        let mut file = fs::File::create(filename)?;
+        let mut source = get_template(lang, template_dir);
+        source = insert_lib(&source, template_dir, lang, libs);
+        file.write_all(source.as_bytes())?;
+    }
+
+    Ok(())
 }
