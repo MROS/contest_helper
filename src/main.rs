@@ -1,4 +1,5 @@
 use clap::{App, Arg, SubCommand};
+use dirs::home_dir;
 use std::fs;
 use std::io::prelude::*;
 use std::path::Path;
@@ -27,7 +28,12 @@ fn insert_lib(source: &str, dir: &Path, lang: &str, libs: Vec<&str>) -> String {
 }
 
 fn main() -> std::io::Result<()> {
-    let template_dir = Path::new("/home/mros/bin/contest_helper/template/");
+    let template_dir = &home_dir()
+        .unwrap()
+        .as_path()
+        .join(".config")
+        .join("ch")
+        .join("template");
 
     let matches = App::new("contest_helper")
         .arg(Arg::with_name("language").long("lang").takes_value(true))
