@@ -173,7 +173,7 @@ T SegmentTree<T>::__query_max(int idx, int L, int R) {
     } else if (L >= mid + 1) {
         return __query_max(rc, L, R);
     } else {
-        return min(__query_max(lc, L, mid), __query_min(rc, mid + 1, R));
+        return max(__query_max(lc, L, mid), __query_max(rc, mid + 1, R));
     }
 }
 
