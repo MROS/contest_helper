@@ -158,7 +158,7 @@ T SegmentTree<T>::__query_min(int idx, int L, int R) {
 template <typename T>
 T SegmentTree<T>::__query_max(int idx, int L, int R) {
     if (rl[idx] == L && rr[idx] == R) {
-        return mi[idx];
+        return ma[idx];
     }
     __push_down(idx);
     int mid = (rl[idx] + rr[idx]) / 2;
