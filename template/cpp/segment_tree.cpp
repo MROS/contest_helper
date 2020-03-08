@@ -38,16 +38,11 @@ private:
 template <typename T>
 void SegmentTree<T>::__init(int idx, int L, int R) {  // idx start from 1
     rl[idx] = L; rr[idx] = R;
-    if (L == R) {
-        sum[idx] = mi[idx] = ma[idx] = 0;
-    } else {
+    if (L != R) {
         int mid = (L + R) / 2;
         int lc = (idx << 1), rc = (idx << 1) + 1;
         __init(lc, L, mid);
         __init(rc, mid + 1, R);
-        sum[idx] = sum[lc] + sum[rc];
-        mi[idx] = min(mi[lc], mi[rc]);
-        ma[idx] = max(ma[lc], ma[rc]);
     }
 }
 
