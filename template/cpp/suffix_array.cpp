@@ -29,7 +29,7 @@ public:
             suffixs[i].value = s[i];
         }
 
-        for (int k = 1; k <= len; k *= 2) {
+        for (int k = 1; k <= len * 2; k *= 2) {
             // 排序
             sort(suffixs.begin(), suffixs.end(), this->cmp);
 
