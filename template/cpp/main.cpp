@@ -2,6 +2,7 @@
 #include <stack>
 #include <map>
 #include <algorithm>
+#include <iostream>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
