@@ -5,8 +5,8 @@ use std::io::prelude::*;
 use std::path::Path;
 
 // TODO: 改用 "?"
-fn get_template(lang: &str, dir: &Path) -> String {
-    let path = dir.join(lang).join(format!("main.{}", lang));
+fn get_template(lang: &str, main: &str, dir: &Path) -> String {
+    let path = dir.join(lang).join(format!("{}.{}", main, lang));
     return fs::read_to_string(path).unwrap();
 }
 
@@ -37,6 +37,7 @@ fn main() -> std::io::Result<()> {
 
     let matches = App::new("contest_helper")
         .arg(Arg::with_name("language").long("lang").takes_value(true))
+        .arg(Arg::with_name("main").long("main").short("m").takes_value(true))
         .arg(
             Arg::with_name("libs")
                 .long("libs")
@@ -61,6 +62,14 @@ fn main() -> std::io::Result<()> {
         Some(l) => l,
     };
 
+    // 主程式模板
+    let main = match matches.value_of("main") {
+        None => {
+            "main"
+        }
+        Some(l) => l,
+    };
+
     let libs: Vec<&str> = match matches.values_of("libs") {
         Some(libs) => libs.collect(),
         None => vec![],
@@ -75,7 +84,7 @@ fn main() -> std::io::Result<()> {
         }
     } else {
         let mut file = fs::File::create(filename)?;
-        let mut source = get_template(lang, template_dir);
+        let mut source = get_template(lang, main, template_dir);
         source = insert_lib(&source, template_dir, lang, libs);
         file.write_all(source.as_bytes())?;
     }
