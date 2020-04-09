@@ -27,6 +27,9 @@ dir = ["A", "B", "C", "D", "E", "F", "G", "H"]
 # 創造一個 C++ 的模板，從 template/cpp/main.cpp 複製過來的
 ch A.cpp
 
+# 也可以指定主程式的模板，例如產生適合 google code jam 的主程式
+ch -m gcj A.cpp
+
 # 如果 A.cpp 存在，在其內插入 template/cpp/number.cpp
 ch A.cpp --libs number
 ```
