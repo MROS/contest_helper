@@ -10,16 +10,21 @@ mkdir -p ~/.config/ch  # 建立設定目錄
 ln -s $(pwd)/template ~/.config/ch/template # 鏈接模板，如果不想用鏈結的，也可以複製整個目錄
 ```
 
-## 設定（未完成）
+## 設定
 
 您可以在 `~/.config/ch/config.toml` 中設定，說明如下
 
 ``` toml
-# 預設語言
-default-lang = "cpp"
 # 開目錄時的檔案名
 dir = ["A", "B", "C", "D", "E", "F", "G", "H"]
+
+# 預設
+[default]
+language = "cpp"
+main = "main"
 ```
+
+若 `ch` 發現沒有 `config.toml` 檔案，會自行創建一個
 
 ## 使用
 

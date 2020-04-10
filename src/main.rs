@@ -4,6 +4,9 @@ use std::fs;
 use std::io::prelude::*;
 use std::path::Path;
 
+mod config;
+use config::read_config;
+
 // TODO: 改用 "?"
 fn get_template(lang: &str, main: &str, dir: &Path) -> String {
     let path = dir.join(lang).join(format!("{}.{}", main, lang));
@@ -28,6 +31,8 @@ fn insert_lib(source: &str, dir: &Path, lang: &str, libs: Vec<&str>) -> String {
 }
 
 fn main() -> std::io::Result<()> {
+    let config = read_config();
+
     let template_dir = &home_dir()
         .unwrap()
         .as_path()
@@ -37,7 +42,12 @@ fn main() -> std::io::Result<()> {
 
     let matches = App::new("contest_helper")
         .arg(Arg::with_name("language").long("lang").takes_value(true))
-        .arg(Arg::with_name("main").long("main").short("m").takes_value(true))
+        .arg(
+            Arg::with_name("main")
+                .long("main")
+                .short("m")
+                .takes_value(true),
+        )
         .arg(
             Arg::with_name("libs")
                 .long("libs")
@@ -56,17 +66,14 @@ fn main() -> std::io::Result<()> {
             if file_split.len() > 1 {
                 file_split[file_split.len() - 1]
             } else {
-                "cpp" // 沒有副檔名，就當 c++ 了
+                &config.default.language
             }
         }
         Some(l) => l,
     };
 
-    // 主程式模板
     let main = match matches.value_of("main") {
-        None => {
-            "main"
-        }
+        None => &config.default.main,
         Some(l) => l,
     };
 
