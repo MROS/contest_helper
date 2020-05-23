@@ -1,7 +1,6 @@
 class DisjointSet {
 public:
-    DisjointSet(int n): n(n) {};
-    void init(int sz) {  // 初始化 sz 個元素
+    DisjointSet(int sz): sz(sz) {  // 初始化 sz 個元素
         par.resize(sz);
         rank.resize(sz);
         for (int i = 0; i < sz; ++i) {
@@ -30,5 +29,5 @@ public:
     }
 private:
     vector<int> par, rank;
-    int n;
+    int sz;
 };
