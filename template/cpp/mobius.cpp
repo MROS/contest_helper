@@ -20,6 +20,7 @@ public:
 				is_prime[p * i] = false;
 				if (i % p == 0) {
 					mobius[p * i] = 0; // 有平方因數爲 0
+					break;
 				} else {
 					mobius[p * i] = mobius[p] * mobius[i];
 				}
