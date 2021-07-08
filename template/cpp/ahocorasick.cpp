@@ -1,126 +1,114 @@
-class AhoCorasick {
+class AC {
 public:
-    struct node {
-        int ch[26];   // child pointer
-        int pa;       // parent pointer
-        int f;        // failure pointer
+    struct Node {
+        int child[26];   // child pointer
+        int parent;       // parent pointer
+        int fail;        // failure pointer
         int val;
         int depth;
-        bool isWord;
-    }typedef Node;
+        bool is_word;
+    };
 
-    AhoCorasick(int sz) {
-        nodes_.resize(sz);
+    AC(vector<string> words) {
+        this->words = words;
+        build_tree();
+        build_failure();
     }
 
-    void AddWordToDictionary(const string& word) {
-        words_.push_back(word);
-    }
-
-    void BuildAll() {
-        BuildTrie();
-        BuildFailure();
-    }
-
-    unordered_map<int, int> GetMatchedWords(const string& sentence) {  // mapping of wordIdx <-> counts
-        vector<int> cnt(sz_, 0);
+    unordered_map<int, int> get_matched_words(const string& sentence) {  // mapping of wordIdx <-> counts
+        vector<int> cnt(nodes.size(), 0);
         unordered_map<int, int> ret;
         int ptr = 0;
         for (int i = 0; i < sentence.size(); ++i) {
             auto ch = sentence[i];
-            while(ptr != 0 && nodes_[ptr].ch[ch - 'a'] == -1)  ptr = nodes_[ptr].f;
-            if (nodes_[ptr].ch[ch - 'a'] != -1)  ptr = nodes_[ptr].ch[ch - 'a'];
+            while(ptr != 0 && nodes[ptr].child[ch - 'a'] == -1)  ptr = nodes[ptr].fail;
+            if (nodes[ptr].child[ch - 'a'] != -1)  ptr = nodes[ptr].child[ch - 'a'];
             cnt[ptr] += 1;
         }
 
         priority_queue<pair<int, int>> pq;  // (depth, idx)
-        for (int i = 0; i < sz_; ++i)  pq.push({nodes_[i].depth, i});
+        for (int i = 0; i < nodes.size(); ++i)  pq.push({nodes[i].depth, i});
         while (!pq.empty()) {
             auto x = pq.top(); pq.pop();
-            if (nodes_[x.second].isWord)  for (auto idx : m_[x.second])  ret[idx] = cnt[x.second];
-            cnt[nodes_[x.second].f] += cnt[x.second];
+            if (nodes[x.second].is_word)  for (auto idx : word_ends[x.second])  ret[idx] = cnt[x.second];
+            cnt[nodes[x.second].fail] += cnt[x.second];
         }
 
         return ret;
     }
 
-    void PrintTrie() {
-        for (int i = 0; i < sz_; ++i) {
+    void print_trie() {
+        for (int i = 0; i < nodes.size(); ++i) {
             cout << "====== idx " << i << " ======" << endl;
-            cout << "val " << nodes_[i].val << endl;
-            cout << "pa " << nodes_[i].pa << endl;
-            cout << "ch";
-            for (int j = 0; j < 26; ++j)  if (nodes_[i].ch[j] != -1)  cout << " (" << j << "," << nodes_[i].ch[j] << ")";
+            cout << "val " << nodes[i].val << endl;
+            cout << "parent " << nodes[i].parent << endl;
+            cout << "child";
+            for (int j = 0; j < 26; ++j)  if (nodes[i].child[j] != -1)  cout << " (" << j << "," << nodes[i].child[j] << ")";
             cout << endl;
-            cout << "f " << nodes_[i].f << endl;
-            cout << "isWord " << (nodes_[i].isWord ? "true" : "false") << endl;
+            cout << "fail " << nodes[i].fail << endl;
+            cout << "is_word " << (nodes[i].is_word ? "true" : "false") << endl;
         }
     }
 
-    void Clear() {
-        words_.clear();
-        m_.clear();
-        sz_ = 0;
-    }
-
-    string GetWord(int idx) {
-        return words_[idx];
+    string get_word(int idx) {
+        return words[idx];
     }
 
 private:
-    int GetNewNode(int pa, int val, int depth) {
-        memset(nodes_[sz_].ch, -1, sizeof(nodes_[sz_].ch));
-        nodes_[sz_].pa = pa;
-        nodes_[sz_].val = val;
-        nodes_[sz_].depth = depth;
-        nodes_[sz_].isWord = false;
-        return sz_++;
+    int get_new_node(int parent, int val, int depth) {
+        nodes.push_back(Node());
+        Node *node = &nodes[nodes.size() - 1];
+        memset(node->child, -1, sizeof(node->child));
+        node->parent = parent;
+        node->val = val;
+        node->depth = depth;
+        node->is_word = false;
+        return nodes.size() - 1;
     }
 
-    void BuildTrie() {
-        sz_ = 0;
-        GetNewNode(0, -1, 0);  // root
-        for (int i = 0; i < words_.size(); ++i) {
-            AddWordToTrie(words_[i], i);
+    void build_tree() {
+        get_new_node(0, -1, 0);  // root
+        for (int i = 0; i < words.size(); ++i) {
+            add_word_to_trie(words[i], i);
         }
     }
 
-    void AddWordToTrie(const string& word, const int wordIdx) {
+    void add_word_to_trie(const string& word, const int wordIdx) {
         int ptr = 0;  // root
-        int d = 0;
+        int depth = 0;
         for (auto ch : word) {
-            ++d;
-            if (nodes_[ptr].ch[ch - 'a'] == -1) {
-                nodes_[ptr].ch[ch - 'a'] = GetNewNode(ptr, ch - 'a', d);
+            ++depth;
+            if (nodes[ptr].child[ch - 'a'] == -1) {
+                int child_ptr = get_new_node(ptr, ch - 'a', depth);
+                nodes[ptr].child[ch - 'a'] = child_ptr;
             }
-            ptr = nodes_[ptr].ch[ch - 'a'];
+            ptr = nodes[ptr].child[ch - 'a'];
         }
-        nodes_[ptr].isWord = true;
-        m_[ptr].insert(wordIdx);
+        nodes[ptr].is_word = true;
+        word_ends[ptr].insert(wordIdx);
     }
 
-    void BuildFailure() {
+    void build_failure() {
         queue<int> q;
         q.push(0);
         while (q.size()) {
             int idx = q.front(); q.pop();
 
-            if (idx == 0 || nodes_[idx].pa == 0)  nodes_[idx].f = 0;
+            if (idx == 0 || nodes[idx].parent == 0)  nodes[idx].fail = 0;
             else {
-                int ptr = nodes_[nodes_[idx].pa].f;
-                while (ptr != 0 && nodes_[ptr].ch[nodes_[idx].val] == -1)  ptr = nodes_[ptr].f;
-                nodes_[idx].f = nodes_[ptr].ch[nodes_[idx].val] == -1 ? 0 : nodes_[ptr].ch[nodes_[idx].val];
+                int ptr = nodes[nodes[idx].parent].fail;
+                while (ptr != 0 && nodes[ptr].child[nodes[idx].val] == -1)  ptr = nodes[ptr].fail;
+                nodes[idx].fail = nodes[ptr].child[nodes[idx].val] == -1 ? 0 : nodes[ptr].child[nodes[idx].val];
             }
 
             for (int i = 0; i < 26; ++i) {
-                if (nodes_[idx].ch[i] == -1)  continue;
-                q.push(nodes_[idx].ch[i]);
+                if (nodes[idx].child[i] == -1)  continue;
+                q.push(nodes[idx].child[i]);
             }
         }
     }
 
-    vector<Node> nodes_;
-    int sz_;
-    vector<string> words_;
-    unordered_map<int, unordered_set<int>> m_;
+    vector<Node> nodes;
+    vector<string> words;
+    unordered_map<int, unordered_set<int>> word_ends; // key: 節點編號, value: 狀態機中以該節點爲結尾的 word 編號
 };
