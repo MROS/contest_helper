@@ -1,50 +1,49 @@
 namespace Kmp {
 
-    // 計算 s 的 prefix function
-    vector<int> get_prefix(string &s) {
-        int len = s.size();
-        if (len == 0) {
-            return vector<int>();
-        }
+    // 計算 s 的 fail function
+    // 欲求 boder 可用 border[i] = fail[i + 1]
+    vector<int> get_fail(const char *s) {
+        int len = strlen(s);
+        if (len == 0) { return {-1}; } // 無意義
 
-        vector<int> ret(len);
-        ret[0] = -1;
+        vector<int> fail(len + 1);
+        fail[0] = -1;
 
         int i = 1, j = 0;
 
-        while (i < len - 1) {
+        while (i < len) {
             if (j == -1 || s[i] == s[j]) {
                 i++;
                 j++;
-                ret[i] = j;
+                fail[i] = j;
             } else {
-                j = ret[j];
+                j = fail[j];
             }
         }
 
-        return ret;
+        return fail;
     }
 
-    // 若 s 中有 p ，則返回第一次出現的索引
-    // 否則返回 -1
-    int search(string &s, string &p) {
+    // 返回所有 p 在 s 出現的索引位置
+    vector<int> search(const char *s, const char *p) {
         int i = 0, j = 0;
-        int s_len = s.size();
-        int p_len = p.size();
+        int s_len = strlen(s);
+        int p_len = strlen(p);
 
-        vector<int> prefix = get_prefix(p);
+        vector<int> fail = get_fail(p);
+        vector<int> ret;
 
-        while (i < s_len && j < p_len) {
+        while (i < s_len) {
             if (j == -1 || s[i] == p[j]) {
                 i++; j++;
             } else {
-                j = prefix[j];
+                j = fail[j];
+            }
+            if (j == p_len) {
+                ret.push_back(i - p_len);
             }
         }
-        if (j == p.size()) {
-            return i - p.size();
-        }
-        return -1;
+        return ret;
     }
 
 }
