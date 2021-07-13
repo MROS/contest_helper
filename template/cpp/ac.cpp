@@ -6,13 +6,17 @@ public:
         int fail;        // failure pointer
         int val;
         int depth;
-        bool is_word;
+        unordered_set<int> word_ids;  // 狀態機中從 root 到該節點爲結尾對應的的 word 編號 (因允許有相同的 word 被加入，此處選用 set)
+                             // for example, words = ["a", "aa", "aaa", "aa"], the second node 'a' have word_ids = {1, 3}
+        int word_end_count;  // 和 word_ids 不同，這邊統計所有 (不限定起源於 root) 可以以此 node 作為最後一個 node 的數量
+                             // for example, words = ["a", "aa", "aaa", "aa"], the second node 'a' have word_end_count = 3 (對應 word_ids 0, 1, 3)
     };
 
     AC(vector<string> words) {
         this->words = words;
         build_tree();
         build_failure();
+        build_word_end_count();
     }
 
     unordered_map<int, int> get_matched_words(const string& sentence) {  // mapping of wordIdx <-> counts
@@ -30,8 +34,9 @@ public:
         for (int i = 0; i < nodes.size(); ++i)  pq.push({nodes[i].depth, i});
         while (!pq.empty()) {
             auto x = pq.top(); pq.pop();
-            if (nodes[x.second].is_word)  for (auto idx : word_ends[x.second])  ret[idx] = cnt[x.second];
-            cnt[nodes[x.second].fail] += cnt[x.second];
+            int idx = x.second;
+            for (auto word_idx : nodes[idx].word_ids)  ret[word_idx] = cnt[idx];
+            cnt[nodes[idx].fail] += cnt[idx];
         }
 
         return ret;
@@ -46,7 +51,10 @@ public:
             for (int j = 0; j < 26; ++j)  if (nodes[i].child[j] != -1)  cout << " (" << j << "," << nodes[i].child[j] << ")";
             cout << endl;
             cout << "fail " << nodes[i].fail << endl;
-            cout << "is_word " << (nodes[i].is_word ? "true" : "false") << endl;
+            cout << "word_ids";
+            for (auto id : nodes[i].word_ids)  cout << " " << id << ",";
+            cout << endl;
+            cout << "word_end_count " << nodes[i].word_end_count << endl;
         }
     }
 
@@ -62,7 +70,7 @@ private:
         node->parent = parent;
         node->val = val;
         node->depth = depth;
-        node->is_word = false;
+        node->word_end_count = 0;
         return nodes.size() - 1;
     }
 
@@ -84,8 +92,7 @@ private:
             }
             ptr = nodes[ptr].child[ch - 'a'];
         }
-        nodes[ptr].is_word = true;
-        word_ends[ptr].insert(wordIdx);
+        nodes[ptr].word_ids.insert(wordIdx);
     }
 
     void build_failure() {
@@ -108,7 +115,21 @@ private:
         }
     }
 
+    void build_word_end_count() {
+        queue<int> q;
+        q.push(0);
+        while (q.size()) {
+            int idx = q.front(); q.pop();
+
+            nodes[idx].word_end_count = nodes[idx].word_ids.size();
+
+            int idx_fail = nodes[idx].fail;
+            nodes[idx].word_end_count += nodes[idx_fail].word_end_count;
+
+            for (int i = 0; i < 26; ++i)  if (nodes[idx].child[i] != -1)  q.push(nodes[idx].child[i]);
+        }
+    }
+
     vector<Node> nodes;
     vector<string> words;
-    unordered_map<int, unordered_set<int>> word_ends; // key: 節點編號, value: 狀態機中以該節點爲結尾的 word 編號
 };
